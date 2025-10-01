@@ -1,0 +1,61 @@
+pipeline {
+    agent any
+    stages {
+        stage('Git Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Maven Validate') {
+            steps {
+                sh './mvnw validate'
+            }
+        }
+        stage('Maven Compile') {
+            steps {
+                sh './mvnw compile'
+            }
+        }
+        stage('Maven Test') {
+            steps {
+                sh './mvnw test'
+            }
+        }
+        stage('Maven Package') {
+            steps {
+                sh './mvnw package'
+            }
+        }
+        stage('SonarCloud Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
+                    sh './mvnw sonar:sonar -Dsonar.login=$SONAR_TOKEN'
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh './mvnw spring-boot:build-image'
+            }
+        }
+        stage('Scan Docker Image') {
+            steps {
+                sh 'trivy image luckyregistry.azurecr.io/spring-petclinic:latest'
+            }
+        }
+        stage('Login to ACR and Push Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'acr-creds', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh 'docker login luckyregistry.azurecr.io -u $USERNAME -p $PASSWORD'
+                    sh 'docker tag spring-petclinic luckyregistry.azurecr.io/spring-petclinic:latest'
+                    sh 'docker push luckyregistry.azurecr.io/spring-petclinic:latest'
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'kubectl apply -f k8s/deployment.yaml'
+            }
+        }
+    }
+}
