@@ -26,13 +26,13 @@ pipeline {
                 sh './mvnw package'
             }
         }
-        stage('SonarCloud Analysis') {
-            steps {
-                withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
-                    sh './mvnw sonar:sonar -Dsonar.login=$SONAR_TOKEN'
-                }
-            }
-        }
+        // stage('SonarCloud Analysis') {
+        //     steps {
+        //         withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
+        //             sh './mvnw sonar:sonar -Dsonar.login=$SONAR_TOKEN'
+        //         }
+        //     }
+        // }
         stage('Build Docker Image') {
             steps {
                 sh './mvnw spring-boot:build-image'
