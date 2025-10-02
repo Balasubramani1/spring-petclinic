@@ -63,8 +63,13 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f k8s/db.yml' 
+                sh '''
+                    export KUBECONFIG=/home/azureuser/.kube/config
+                    kubectl apply -f k8s/db.yml --validate=false
+                    kubectl apply -f k8s/petclinic.yml --validate=false
+                '''
             }
         }
+
     }
 }
