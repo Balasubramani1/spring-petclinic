@@ -45,7 +45,7 @@ pipeline {
         }
         stage('Login to ACR and Push Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: '6fac933f-07bc-43de-b050-98a0b8c16987/****** (lucky app registry)', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                withCredentials([usernamePassword(credentialsId: '	azure-tenant', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh 'docker login luckyregistry.azurecr.io -u $USERNAME -p $PASSWORD'
                     sh 'docker tag spring-petclinic luckyregistry.azurecr.io/spring-petclinic:latest'
                     sh 'docker push luckyregistry.azurecr.io/spring-petclinic:latest'
