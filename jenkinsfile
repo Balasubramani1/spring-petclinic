@@ -38,20 +38,29 @@ pipeline {
                 sh './mvnw spring-boot:build-image'
             }
         }
-        stage('Scan Docker Image') {
-            steps {
-                sh 'trivy image luckyregistry.azurecr.io/spring-petclinic:latest'
-            }
-        }
         stage('Login to ACR and Push Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'luckyregistry/******', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh 'docker login luckyregistry.azurecr.io -u $USERNAME -p $PASSWORD'
-                    sh 'docker tag spring-petclinic luckyregistry.azurecr.io/spring-petclinic:latest'
-                    sh 'docker push luckyregistry.azurecr.io/spring-petclinic:latest'
+                    sh '''
+                        echo "$PASSWORD" | docker login luckyregistry.azurecr.io -u "$USERNAME" --password-stdin
+                        docker tag spring-petclinic:3.5.0-SNAPSHOT luckyregistry.azurecr.io/spring-petclinic:latest
+                        docker push luckyregistry.azurecr.io/spring-petclinic:latest
+                    '''
                 }
             }
         }
+
+        stage('Scan Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'luckyregistry/******', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh '''
+                        echo "$PASSWORD" | docker login luckyregistry.azurecr.io -u "$USERNAME" --password-stdin
+                        trivy image luckyregistry.azurecr.io/spring-petclinic:latest
+                    '''
+                }
+            }
+        }
+
         stage('Deploy to Kubernetes') {
             steps {
                 sh 'kubectl apply -f k8s/deployment.yaml'
