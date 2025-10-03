@@ -40,7 +40,7 @@ pipeline {
         }
         stage('Login to ACR and Push Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: '06f82b08-20f6-4a6e-887b-4eed929a2f6a', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                withCredentials([usernamePassword(credentialsId: '123', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh '''
                         echo "$PASSWORD" | docker login luckyregistry.azurecr.io -u "$USERNAME" --password-stdin
                         docker tag spring-petclinic:3.5.0-SNAPSHOT luckyregistry.azurecr.io/spring-petclinic:latest
@@ -52,7 +52,7 @@ pipeline {
 
         stage('Scan Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: '06f82b08-20f6-4a6e-887b-4eed929a2f6a', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                withCredentials([usernamePassword(credentialsId: '123', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh '''
                         echo "$PASSWORD" | docker login luckyregistry.azurecr.io -u "$USERNAME" --password-stdin
                         trivy image luckyregistry.azurecr.io/spring-petclinic:latest
